@@ -17,6 +17,7 @@ class Caculator:
         # --------------------/ Main window / --------------------
         self.all_nums = ""
         self.current_num = ""
+        self.final_result = ""
         self.oFrame = self.Creat_output_frame()
         self.bFrame = self.Creat_button_frame()
         self.output = self.creat_output()
@@ -31,7 +32,7 @@ class Caculator:
 
         self.specialKey_list = {             # alt 0178 = ² /  alt 251 = √ / alt 0247 = ÷ / 
             "C":(0, 0),"x²":(0, 1),"√x":(0, 2),
-            "x":(0, 3),"÷":(1, 3),"+":(2, 3),
+            "×":(0, 3),"÷":(1, 3),"+":(2, 3),
             "-":(3, 3),"=":(4, 3),
         }
         self.special_buttons = self.creat_special_buttons()
@@ -40,6 +41,7 @@ class Caculator:
             self.bFrame.rowconfigure(i, weight=1)
             self.bFrame.columnconfigure(i, weight=1)
         
+        self.operators = {"×" : '*',"÷" :  '/',"+" :  '+', "-" : '-'}#Alt 0215 × 
 
 # --------------------/ Frames / --------------------
     def Creat_output_frame(self):
@@ -82,20 +84,54 @@ class Caculator:
         self.current_num_label.config(text=self.current_num)
 
 
-
+        # ----------------/Operations and update result / ---------------
     def update_all_nums(self, value):
-        if value in ['x', '÷', '+', '-']:
-            self.all_nums += self.current_num
-            self.all_nums += str(value)
-            self.clear_current_nums()
-            self.all_nums_label.config(text=self.all_nums)
 
+        if value in self.operators:
+            if self.all_nums == "":  # in baraye ine ke operation bad az = zdn dobare natije ro add nkne be total
+                self.all_nums += self.current_num      # what user see
+            self.final_result = ""
+            self.final_result += self.all_nums      # back_end
+            self.final_result += self.operators[value]      # back_end
+
+            self.all_nums += value          # what user see
+            self.clear_current_nums()
+            self.all_nums_label.config(text=self.all_nums)           # what user see
+
+
+        if value == "=":
+            # stage 1 => add current num to over all and update it then clear current num
+            self.all_nums += self.current_num       # what user see
+            self.final_result += self.current_num     # back_end
+            self.clear_current_nums()
+            self.all_nums_label.config(text=self.all_nums)      # what user see
+
+            try :
+                # stage 2 => caculate over all and print it 
+                self.final_result = str(eval(self.final_result))   # back_end/ta 11 ragham dige bishtar she mizne biron az sfhe
+                if len(self.final_result) > 11 :
+                    self.current_num_label.config(text=str(int(self.final_result)/ 10**10)[:6]  + " ×10¹⁰")
+                else:
+                    self.current_num = self.final_result        # what user see
+                    self.current_num_label.config(text=self.final_result)       # what user see
+
+                self.all_nums = self.final_result       # back_end --> this is for next operation after pressing = 
+            
+            except Exception as e:      # tagsim bar sefri chizi ia ton ton operator zdn handle mikne
+                self.current_num_label.config(text="Error")
+                self.all_nums = ""
+
+        if value == "C":
+            self.clear_current_nums()
+            self.clear_all_nums()
+
+        # ----------------/Operations and update result / ---------------
 
 
     def creat_num_buttons(self):
         for num, grid in self.numbers_list.items():
             button = Button(self.bFrame, text=str(num))
-            button.config(activeforeground="orange", activebackground="#2b2c29",
+            button.config(activeforeground="gold", activebackground="#2b2c29",
              bg="#2b2c29", fg="white", borderwidth=0, font=("arial", 26), command=lambda x = num: self.update_current_num(x))
             button.grid(row=grid[0], column=grid[1], sticky=NSEW)
 
@@ -112,15 +148,6 @@ class Caculator:
 
 
 # --------------------/ Buttons / --------------------
-
-
-
-
-
-
-
-
-
 
     def Run(self):
         self.root.mainloop()
