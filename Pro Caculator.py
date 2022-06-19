@@ -12,7 +12,7 @@ class Caculator:
         self.root.geometry("400x600+500+100")
         self.root.resizable(0, 0)
         self.root.iconbitmap(bitmap="gray75")
-        self.root.title("Caculator Mahdi Edition")
+        self.root.title("Caculator Pro")
         self.root.attributes("-alpha", 0.98)
         # --------------------/ Main window / --------------------
         self.all_nums = ""
@@ -40,7 +40,7 @@ class Caculator:
             self.bFrame.rowconfigure(i, weight=1)
             self.bFrame.columnconfigure(i, weight=1)
         
-        self.operators = ["*","/","+","-"]
+        self.operators = ["*", "/", "+", "-"]
 
 # --------------------/ Frames / --------------------
     def Creat_output_frame(self):
@@ -93,45 +93,73 @@ class Caculator:
 
 
         # ----------------/Operations and update result / ---------------
-    def operate(self, value):
 
-        if value in self.operators and not self.already_have_Operator:
-            self.already_have_Operator = True
-            self.all_nums += self.current_num       
-            self.all_nums += value           
-            self.clear_current_nums()
-            self.update_all_nums()
+    def caculate(self):
+        # stage 1 => add current num to over all and update it then clear current num
+        self.all_nums += self.current_num        
+        self.clear_current_nums()
+        self.update_all_nums()      
 
-        elif value in self.operators and self.already_have_Operator:  # nmizare spam kone operator haro update mikneshon
-            self.all_nums = self.all_nums[:-1] + value # pop last operator and put new one
-            self.update_all_nums()
-
-        if value == "=":
-            # stage 1 => add current num to over all and update it then clear current num
-            self.all_nums += self.current_num        
-            self.clear_current_nums()
-            self.update_all_nums()      
-
-            #stage 2 => caculate and update current num
-            try :
-                self.current_num = str(eval(self.all_nums))[:11]         
-                self.current_num_label.config(text=self.current_num)
-            except ZeroDivisionError :
-                self.current_num_label.config(text="zero division:(")
-                self.current_num = ""
-                self.all_nums = ""       
-            except Exception as e:
-                self.current_num_label.config(text="Error !!!")   
-                self.current_num = ""
-                self.all_nums = ""     
-
-            self.all_nums = self.current_num       # --> this is for next operation after pressing = 
+        #stage 2 => caculate and update current num
+        try :
+            self.current_num = str(eval(self.all_nums))[:11]         
+            self.current_num_label.config(text=self.current_num)
+        except ZeroDivisionError :
+            self.current_num_label.config(text="zero division:(")
             self.current_num = ""
-            
+            self.all_nums = ""       
+        except Exception as e:
+            self.current_num_label.config(text="Error !!!")   
+            self.current_num = ""
+            self.all_nums = ""     
 
+        self.all_nums = self.current_num       # --> this is for next operation after pressing = 
+        self.current_num = ""
+                
+    def operate(self, value):
+        try :
+            if value in self.operators and not self.already_have_Operator:
+                self.already_have_Operator = True
+                self.all_nums += self.current_num       
+                self.all_nums += value           
+                self.clear_current_nums()
+                self.update_all_nums()
+
+            elif value in self.operators and self.already_have_Operator:  # nmizare spam kone operator haro update mikneshon
+                self.all_nums = self.all_nums[:-1] + value # pop last operator and put new one
+                self.update_all_nums()
+        except Exception as E :
+            self.current_num_label.config(text="put a number")
+
+        #operates final result
+        if value == "=":
+            self.caculate()
         if value == "C":
             self.clear_current_nums()
             self.clear_all_nums()
+
+        if value == "**":
+            try :
+                self.caculate()           
+                self.all_nums_label.config(text=f"{self.all_nums}²")
+                self.current_num = str(pow(float(self.all_nums), 2))[:11]
+                self.current_num_label.config(text=self.current_num)
+                self.all_nums = self.current_num
+                self.current_num = ""
+            except Exception as e:
+                self.current_num_label.config(text="put a number")
+
+        if value == "**0.5":
+            try :
+                self.caculate()           
+                self.all_nums_label.config(text=f"√{self.all_nums}")
+                self.current_num = str(pow(float(self.all_nums), 0.5))[:11]
+                self.current_num_label.config(text=self.current_num)
+                self.all_nums = self.current_num
+                self.current_num = ""
+            except Exception as e:
+                self.current_num_label.config(text="put a number")
+
 
         # ----------------/Operations and update result / ---------------
 
