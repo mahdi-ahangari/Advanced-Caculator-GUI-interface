@@ -17,7 +17,6 @@ class Caculator:
         # --------------------/ Main window / --------------------
         self.all_nums = ""
         self.current_num = ""
-        self.final_result = ""
         self.oFrame = self.Creat_output_frame()
         self.bFrame = self.Creat_button_frame()
         self.output = self.creat_output()
@@ -30,10 +29,10 @@ class Caculator:
         }
         self.num_buttons = self.creat_num_buttons()
 
-        self.specialKey_list = {             # alt 0178 = ² /  alt 251 = √ / alt 0247 = ÷ / 
-            "C":(0, 0),"x²":(0, 1),"√x":(0, 2),
-            "×":(0, 3),"÷":(1, 3),"+":(2, 3),
-            "-":(3, 3),"=":(4, 3),
+        self.specialKey_list = {             # alt 0178 = ² /  alt 251 = √ / alt 0247 = ÷ / alt 0215 × 
+            ("C", "C"):(0, 0),("x²", "**"):(0, 1),("√x", "**0.5"):(0, 2),
+            ("×", "*"):(0, 3),("÷", "/"):(1, 3),("+", "+"):(2, 3),
+            ("-", "-"):(3, 3),("=", "="):(4, 3),
         }
         self.special_buttons = self.creat_special_buttons()
 
@@ -41,7 +40,7 @@ class Caculator:
             self.bFrame.rowconfigure(i, weight=1)
             self.bFrame.columnconfigure(i, weight=1)
         
-        self.operators = {"×" : '*',"÷" :  '/',"+" :  '+', "-" : '-'}#Alt 0215 × 
+        self.operators = ["*","/","+","-"]
 
 # --------------------/ Frames / --------------------
     def Creat_output_frame(self):
@@ -60,7 +59,7 @@ class Caculator:
         self.all_nums_label = Label(self.oFrame, text=self.all_nums, font=small_font, bg= "gray", fg="white", padx=8, pady=20, anchor=E)
         self.all_nums_label.pack(expand= True,fill=BOTH)
 
-        self.current_num_label = Label(self.oFrame, text=self.current_num, font=big_font, bg= "gray", fg="white", padx=10, anchor=E) # #2b2c33
+        self.current_num_label = Label(self.oFrame, text=self.current_num, font=big_font, bg= "gray", fg="white", padx=10, anchor=E)
         self.current_num_label.pack(expand= True,fill=BOTH)
 
         return self.all_nums_label, self.current_num_label
@@ -80,46 +79,43 @@ class Caculator:
 
 
     def update_current_num(self, value):
-        self.current_num += str(value)
-        self.current_num_label.config(text=self.current_num)
+        if len(self.current_num) < 11 :
+            self.current_num += str(value)
+            self.current_num_label.config(text=self.current_num)
+        
+
+    def update_all_nums(self):
+        replace_method = self.all_nums
+        for operator, _ in self.specialKey_list.items():
+            one = operator[0]
+            two = operator[1]
+            replace_method = replace_method.replace(one, two)
+        self.all_nums_label.config(text=replace_method)
 
 
         # ----------------/Operations and update result / ---------------
-    def update_all_nums(self, value):
+    def operate(self, value):
 
         if value in self.operators:
-            if self.all_nums == "":  # in baraye ine ke operation bad az = zdn dobare natije ro add nkne be total
-                self.all_nums += self.current_num      # what user see
-            self.final_result = ""
-            self.final_result += self.all_nums      # back_end
-            self.final_result += self.operators[value]      # back_end
-
-            self.all_nums += value          # what user see
+            self.all_nums += self.current_num       
+            self.all_nums += value           
             self.clear_current_nums()
-            self.all_nums_label.config(text=self.all_nums)           # what user see
+            self.update_all_nums()           
 
 
         if value == "=":
             # stage 1 => add current num to over all and update it then clear current num
-            self.all_nums += self.current_num       # what user see
-            self.final_result += self.current_num     # back_end
+            self.all_nums += self.current_num        
             self.clear_current_nums()
-            self.all_nums_label.config(text=self.all_nums)      # what user see
+            self.update_all_nums()      
 
-            try :
-                # stage 2 => caculate over all and print it 
-                self.final_result = str(eval(self.final_result))   # back_end/ta 11 ragham dige bishtar she mizne biron az sfhe
-                if len(self.final_result) > 11 :
-                    self.current_num_label.config(text=str(int(self.final_result)/ 10**10)[:6]  + " ×10¹⁰")
-                else:
-                    self.current_num = self.final_result        # what user see
-                    self.current_num_label.config(text=self.final_result)       # what user see
+            #stage 2 => caculate and update current num
+            self.current_num = str(eval(self.all_nums))[:11]         
+            self.current_num_label.config(text=self.current_num)        
 
-                self.all_nums = self.final_result       # back_end --> this is for next operation after pressing = 
+            self.all_nums = self.current_num       # --> this is for next operation after pressing = 
+            self.current_num = ""
             
-            except Exception as e:      # tagsim bar sefri chizi ia ton ton operator zdn handle mikne
-                self.current_num_label.config(text="Error")
-                self.all_nums = ""
 
         if value == "C":
             self.clear_current_nums()
@@ -137,10 +133,10 @@ class Caculator:
 
 
     def creat_special_buttons(self):
-        for key, grid in self.specialKey_list.items():
-            button = Button(self.bFrame, text=str(key))
+        for key, grid in self.specialKey_list.items():   # back end symbol hay python use mide front shekl dige nshon mide
+            button = Button(self.bFrame, text=str(key[0]))
             button.config(activeforeground="gold", activebackground="#2b2c30",
-             bg="#2b2c30", fg="white", borderwidth=0, font=("arial", 26), command=lambda x = key: self.update_all_nums(x))
+             bg="#2b2c30", fg="white", borderwidth=0, font=("arial", 26), command=lambda x = key[1]: self.operate(x))
 
             button.grid(row=grid[0], column=grid[1], sticky=NSEW)
             if key == "=" :
