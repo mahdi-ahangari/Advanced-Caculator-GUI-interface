@@ -87,9 +87,7 @@ class Caculator:
     def update_all_nums(self):
         replace_method = self.all_nums
         for operator, _ in self.specialKey_list.items():
-            one = operator[0]
-            two = operator[1]
-            replace_method = replace_method.replace(one, two)
+            replace_method = replace_method.replace(operator[1], operator[0])
         self.all_nums_label.config(text=replace_method)
 
 
