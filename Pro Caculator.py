@@ -80,26 +80,31 @@ class Caculator:
 
     def update_current_num(self, value):
         if len(self.current_num) < 11 :
+            self.already_have_Operator = False
             self.current_num += str(value)
             self.current_num_label.config(text=self.current_num)
         
 
     def update_all_nums(self):
-        replace_method = self.all_nums
+        replace_method = self.all_nums           # back end avaz nashe chon avz miknim chizi ke be karbar nshon dade mishe 
         for operator, _ in self.specialKey_list.items():
-            replace_method = replace_method.replace(operator[1], operator[0])
+            replace_method = replace_method.replace(operator[1], operator[0]) # jay sheklay pythoni ba riazi ii avz mikne Then update
         self.all_nums_label.config(text=replace_method)
 
 
         # ----------------/Operations and update result / ---------------
     def operate(self, value):
 
-        if value in self.operators:
+        if value in self.operators and not self.already_have_Operator:
+            self.already_have_Operator = True
             self.all_nums += self.current_num       
             self.all_nums += value           
             self.clear_current_nums()
-            self.update_all_nums()           
+            self.update_all_nums()
 
+        elif value in self.operators and self.already_have_Operator:  # nmizare spam kone operator haro update mikneshon
+            self.all_nums = self.all_nums[:-1] + value # pop last operator and put new one
+            self.update_all_nums()
 
         if value == "=":
             # stage 1 => add current num to over all and update it then clear current num
@@ -108,8 +113,17 @@ class Caculator:
             self.update_all_nums()      
 
             #stage 2 => caculate and update current num
-            self.current_num = str(eval(self.all_nums))[:11]         
-            self.current_num_label.config(text=self.current_num)        
+            try :
+                self.current_num = str(eval(self.all_nums))[:11]         
+                self.current_num_label.config(text=self.current_num)
+            except ZeroDivisionError :
+                self.current_num_label.config(text="zero division:(")
+                self.current_num = ""
+                self.all_nums = ""       
+            except Exception as e:
+                self.current_num_label.config(text="Error !!!")   
+                self.current_num = ""
+                self.all_nums = ""     
 
             self.all_nums = self.current_num       # --> this is for next operation after pressing = 
             self.current_num = ""
