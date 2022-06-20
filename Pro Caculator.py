@@ -44,7 +44,7 @@ class Caculator:
         self.operators = ["*", "/", "+", "-"]
         self.already_have_Operator = False    # operator spam nkne  
         self.pow_on = False     # bad as pow² dige adad nzne ke **2 adad bere jolosh dige pow 2 nmishe
-        self.should_closeP = False  # we using sqrt() for root so i insert sqrt( first after numbers done i close it ')'
+        self.should_closeP = False  # i use sqrt() for root so i insert sqrt( first after numbers done i close it ')'
 
 # --------------------/ Frames / --------------------
     def Creat_output_frame(self):
